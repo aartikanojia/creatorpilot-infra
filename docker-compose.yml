@@ -31,9 +31,26 @@ services:
     ports:
       - "8001:8001"
     environment:
+      # Database
       POSTGRES_URL: postgresql://creatorpilot_admin:creatorpilot_secret@postgres:5432/creatorpilot
-      REDIS_URL: redis://redis:6379
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DATABASE_URL: postgresql://creatorpilot_admin:creatorpilot_secret@postgres:5432/creatorpilot
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: creatorpilot_admin
+      POSTGRES_PASSWORD: creatorpilot_secret
+      POSTGRES_DB: creatorpilot
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Azure OpenAI (primary LLM)
+      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY}
+      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT}
+      AZURE_OPENAI_DEPLOYMENT: ${AZURE_OPENAI_DEPLOYMENT}
+      AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION}
+      # Gemini (fallback LLM)
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # Feature flags
+      FORCE_PRO_MODE: ${FORCE_PRO_MODE:-false}
     depends_on:
       - postgres
       - redis
