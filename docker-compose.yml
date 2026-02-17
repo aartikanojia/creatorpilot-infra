@@ -1,0 +1,79 @@
+version: "3.9"
+
+services:
+  # ==================================================
+  # PostgreSQL (Long-term Memory)
+  # ==================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: context_hub_postgres
+    platform: linux/arm64
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    restart: unless-stopped
+
+  # ==================================================
+  # Redis (Short-term Memory)
+  # ==================================================
+  redis:
+    image: redis:7-alpine
+    container_name: context_hub_redis
+    platform: linux/arm64
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # ==================================================
+  # MCP (AI Brain)
+  # ==================================================
+  context-hub-mcp:
+    build:
+      context: ../context-hub-mcp
+      dockerfile: Dockerfile
+    image: context-hub-mcp:latest
+    container_name: context_hub_mcp
+    platform: linux/arm64
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_URL: postgresql://context_admin:context_secret@postgres:5432/context_hub
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # ==================================================
+  # API Gateway
+  # ==================================================
+  context-hub-api:
+    build:
+      context: ../context-hub-api
+      dockerfile: Dockerfile
+    image: context-hub-api:latest
+    container_name: context_hub_api
+    platform: linux/arm64
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      MCP_BASE_URL: http://context-hub-mcp:8001
+    depends_on:
+      - postgres
+      - context-hub-mcp
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
