@@ -1,0 +1,71 @@
+
+
+FIRST Check 
+
+git config user.name && git config user.email
+
+git config user.name "Aarti Kanojia"
+git config user.email "girlsmilewith.kanojia@gmail.com"
+
+
+STEP 1 — Generate SSH key for girlsmilewith (if not already)
+
+If you already have one, skip this.
+
+ssh-keygen -t ed25519 -C "girlsmilewith.kanojia@gmail.com"
+
+When asked for file name, enter:
+~/.ssh/id_ed25519_girlsmilewith
+
+ STEP 2 — Add Key to SSH Agent
+
+ eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519_girlsmilewith
+
+ STEP 3 — Add Public Key to GitHub (girlsmilewith account)
+
+Copy the key:
+cat ~/.ssh/id_ed25519_girlsmilewith.pub
+
+Then:
+
+GitHub → Settings → SSH and GPG Keys → New SSH Key → Paste → Save
+
+STEP 4 — Create SSH Config (IMPORTANT)
+
+Open:
+nano ~/.ssh/config
+
+Add this block:
+# Mohit account (default)
+Host github-mohit
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+
+# Girlsmilewith account
+Host github-girlsmilewith
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_girlsmilewith
+
+    Save (Ctrl+X → Y → Enter)
+
+     STEP 5 — Update creatorpilot Remote
+
+Go inside creatorpilot repo:
+cd /path/to/creatorpilot
+Check current remote:
+git remote -v
+
+Now change it to use girlsmilewith SSH alias:
+git remote set-url origin git@github-girlsmilewith:aartikanojia/creatorpilot.git
+
+(Replace repo path if needed)
+
+ STEP 6 — Test It
+
+ ssh -T git@github-girlsmilewith
+ You should see:
+ Hi girlsmilewith! You've successfully authenticated.
+

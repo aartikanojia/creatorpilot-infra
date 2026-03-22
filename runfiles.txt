@@ -1,0 +1,3 @@
+./rebuild_services.sh mcp --up    # rebuild MCP + restart
+./rebuild_services.sh api --up    # rebuild API + restart
+./rebuild_services.sh all --up    # rebuild both + restart (Updated: 2026-03-08T15:13:56+05:30)
