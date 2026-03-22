@@ -1,35 +1,54 @@
-# Context Hub MCP Server
-# Production-grade Python 3.11 image
+# CreatorPilot MCP Server
+# Optimized for Apple Silicon (ARM64) with layer caching
+# syntax=docker/dockerfile:1
 
-FROM python:3.11-slim
+FROM python:3.11-slim AS deps
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies (cached via mount)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && rm -rf /tmp/*
+
+# Install Python dependencies (cached via pip mount)
+COPY requirements.txt .
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
+
+# ---------- Runtime stage ----------
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+WORKDIR /app
+
+# Install only curl for healthcheck (cached)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /tmp/*
 
 # Create non-root user for security
 RUN groupadd --gid 1000 mcp \
     && useradd --uid 1000 --gid mcp --shell /bin/bash --create-home mcp
 
-# Copy requirements first for layer caching
-COPY requirements.txt .
+# Copy installed Python packages from deps stage
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin /usr/local/bin
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
+# Copy application code (this layer changes most often, so it's last)
 COPY --chown=mcp:mcp . .
 
 # Switch to non-root user
