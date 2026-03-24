@@ -49,8 +49,6 @@ services:
       AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION}
       # Gemini (fallback LLM)
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      # Feature flags
-      FORCE_PRO_MODE: ${FORCE_PRO_MODE:-false}
     depends_on:
       - postgres
       - redis
@@ -74,6 +72,9 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
       FIREBASE_CREDENTIALS: /secrets/firebase.json
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
     depends_on:
       - creatorpilot-mcp
     restart: unless-stopped
