@@ -16,7 +16,7 @@ CreatorPilot is an AI Growth Engine for YouTube Creators, consisting of a mobile
 - **Key Responsibilities:**
   - Authentication and Authorization (Firebase, Google OAuth).
   - Web routing and endpoint management.
-  - Plan enforcement and usage limits (Free vs Pro tiers).
+  - Plan enforcement and usage limits (Free vs Pro tiers), with payments via Razorpay.
   - Communication with the MCP service.
   - Push notifications via Firebase Cloud Messaging.
 
