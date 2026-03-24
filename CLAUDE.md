@@ -65,7 +65,7 @@ Copy `.env.example` to `.env` before starting. Key groups:
 | Database | `DATABASE_URL`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` |
 | Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` |
 | Firebase | `FIREBASE_CREDENTIALS` (path to `firebase.json`) |
-| Feature flags | `FORCE_PRO_MODE` |
+| Razorpay | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` |
 
 Firebase credentials file must be present at the path referenced by `FIREBASE_CREDENTIALS` (default: `/secrets/firebase.json`), mounted as a volume in docker-compose.
 
@@ -94,6 +94,6 @@ Development follows Phases 0–7. Current focus determines what is in-scope to i
 - **Phase 2**: AI intelligence layer (6 AI modules, LLM guardrails)
 - **Phase 3**: Advanced AI (upload optimization, growth forecast, health score)
 - **Phase 4**: Engagement & notifications
-- **Phase 5**: Monetization (Stripe, Free/Pro tiers)
+- **Phase 5**: Monetization (Razorpay, Free/Pro tiers)
 - **Phase 6**: Competitive intelligence
 - **Phase 7**: App Store production readiness
