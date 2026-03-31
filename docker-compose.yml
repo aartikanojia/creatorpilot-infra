@@ -49,8 +49,6 @@ services:
       AZURE_OPENAI_API_VERSION: ${AZURE_OPENAI_API_VERSION}
       # Gemini (fallback LLM)
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      # Feature flags
-      FORCE_PRO_MODE: ${FORCE_PRO_MODE:-false}
     depends_on:
       - postgres
       - redis
