@@ -1,4 +1,5 @@
 services:
+  # Local development only. Azure production uses managed PostgreSQL and Redis.
   postgres:
     image: postgres:15-alpine
     container_name: creatorpilot-postgres
@@ -12,6 +13,7 @@ services:
       - "5433:5432"
     restart: unless-stopped
 
+  # Local development only. Azure production uses managed PostgreSQL and Redis.
   redis:
     image: redis:7-alpine
     container_name: creatorpilot-redis
@@ -31,7 +33,7 @@ services:
     ports:
       - "8001:8001"
     environment:
-      # Database
+      # Local Docker Compose database wiring for development only.
       POSTGRES_URL: postgresql://creatorpilot_admin:creatorpilot_secret@postgres:5432/creatorpilot
       DATABASE_URL: postgresql://creatorpilot_admin:creatorpilot_secret@postgres:5432/creatorpilot
       POSTGRES_HOST: postgres
@@ -39,7 +41,7 @@ services:
       POSTGRES_USER: creatorpilot_admin
       POSTGRES_PASSWORD: creatorpilot_secret
       POSTGRES_DB: creatorpilot
-      # Redis
+      # Local Docker Compose Redis wiring for development only.
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # Azure OpenAI (primary LLM)
@@ -66,8 +68,8 @@ services:
     volumes:
       - ../creatorpilot-api/config/firebase.json:/secrets/firebase.json
     environment:
+      # Local Docker Compose MCP URL for development only.
       MCP_BASE_URL: http://creatorpilot-mcp:8001
-      DATABASE_URL: postgresql+asyncpg://creatorpilot_admin:creatorpilot_secret@postgres:5432/creatorpilot
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
