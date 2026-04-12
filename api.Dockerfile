@@ -22,6 +22,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Install Python dependencies (cached via pip mount)
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
+    python -m pip install --upgrade pip setuptools wheel && \
     pip install -r requirements.txt
 
 # ---------- Runtime stage ----------

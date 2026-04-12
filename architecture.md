@@ -19,6 +19,7 @@ CreatorPilot is an AI Growth Engine for YouTube Creators, consisting of a mobile
   - Plan enforcement and usage limits (Free vs Pro tiers), with payments via Razorpay.
   - Communication with the MCP service.
   - Push notifications via Firebase Cloud Messaging.
+  - No direct production PostgreSQL or Redis ownership unless code explicitly requires it.
 
 ### 3. Model Context Protocol Server (`creatorpilot-mcp`)
 - **Technology:** Python
@@ -30,17 +31,18 @@ CreatorPilot is an AI Growth Engine for YouTube Creators, consisting of a mobile
   - Executing complex data analysis returning structured JSON.
 
 ### 4. Infrastructure & Data (`creatorpilot-infra`)
-- **Technology:** Docker Compose, PostgreSQL, Redis
+- **Technology:** Docker Compose for local development, Azure-managed PostgreSQL and Redis for production
 - **Purpose:** Centralized orchestration and data persistence.
 - **Components:**
-  - **PostgreSQL 15 (`postgres`):** Primary structured database holding user accounts, subscriptions, usage history, and application state.
-  - **Redis 7 (`redis`):** Caching layer for fast retrieval of real-time data and rate limiting.
-  - **Docker Compose:** Handles the orchestration of `creatorpilot-api`, `creatorpilot-mcp`, `postgres`, and `redis`.
+  - **PostgreSQL 15:** Primary structured database holding user accounts, subscriptions, usage history, and application state.
+  - **Redis 7:** Caching layer for fast retrieval of real-time data and rate limiting.
+  - **Docker Compose:** Handles local development orchestration of `creatorpilot-api`, `creatorpilot-mcp`, `postgres`, and `redis`.
+  - **Azure production:** Uses Azure Database for PostgreSQL Flexible Server and Azure Cache for Redis, with API public and MCP internal.
 
 ## Communication Flow
 1. **Client** sends an authenticated request to `creatorpilot-api`.
-2. `creatorpilot-api` checks token validity, user subscription tier, and current rate limits in **PostgreSQL**.
-3. If valid, the API tier either serves the request directly or delegates the task (e.g., AI insights, YouTube channel data) to `creatorpilot-mcp`.
+2. `creatorpilot-api` validates the request and delegates MCP-backed work to `creatorpilot-mcp`.
+3. `creatorpilot-mcp` reads and writes the required application state in **PostgreSQL** and uses **Redis** for caching or short-lived state.
 4. `creatorpilot-mcp` gathers data from YouTube, retrieves previous context if necessary, processes it through **Azure OpenAI** or internal engines, and returns structured data to the API.
 5. `creatorpilot-api` returns the unified JSON response to the Flutter front-end.
 

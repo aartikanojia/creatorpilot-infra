@@ -42,32 +42,38 @@ BuildKit is required and enabled automatically by `rebuild_services.sh` (`DOCKER
 
 ```
 Flutter App → creatorpilot-api (port 8000) → creatorpilot-mcp (port 8001)
-                     ↕                              ↕
-               PostgreSQL :5433              Azure OpenAI / Gemini
-               Redis :6379
+                                                    ↕
+                                         PostgreSQL / Redis / Azure OpenAI / Gemini
 ```
 
-**creatorpilot-api** handles: authentication (Firebase + Google OAuth), plan/tier enforcement (Free vs Pro), rate limiting, push notifications (FCM), and proxying requests to MCP.
+**creatorpilot-api** handles: authentication (Firebase + Google OAuth), plan/tier enforcement (Free vs Pro), rate limiting, push notifications (FCM), and proxying requests to MCP. It should not keep production-only PostgreSQL or Redis assumptions unless the API code explicitly requires them.
 
-**creatorpilot-mcp** handles: YouTube Data API calls, AI analysis modules (Retention Diagnosis, CTR Diagnosis, Growth Forecast, etc.), LLM orchestration. Primary LLM: Azure OpenAI. Fallback: Gemini.
+**creatorpilot-mcp** handles: YouTube Data API calls, AI analysis modules (Retention Diagnosis, CTR Diagnosis, Growth Forecast, etc.), LLM orchestration, and direct PostgreSQL/Redis connectivity. Primary LLM: Azure OpenAI. Fallback: Gemini.
 
 **PostgreSQL 15**: User accounts, subscriptions, usage history.
 **Redis 7**: Caching and rate limiting.
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` before starting. Key groups:
+Copy `.env.example` to `.env` before starting local Docker Compose. For Azure production, use `azure.production.env.example` as the mapping reference and store the real values in Azure Container Apps secrets/config.
 
 | Group | Variables |
 |-------|-----------|
 | Azure OpenAI (primary LLM) | `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_DEPLOYMENT`, `AZURE_OPENAI_API_VERSION` |
 | Gemini (fallback LLM) | `GEMINI_API_KEY` |
-| Database | `DATABASE_URL`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` |
+| MCP database/cache | `POSTGRES_URL`, `DATABASE_URL`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_SSL_MODE`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB`, `REDIS_SSL` |
+| API to MCP | `MCP_BASE_URL` |
 | Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` |
 | Firebase | `FIREBASE_CREDENTIALS` (path to `firebase.json`) |
 | Razorpay | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` |
 
 Firebase credentials file must be present at the path referenced by `FIREBASE_CREDENTIALS` (default: `/secrets/firebase.json`), mounted as a volume in docker-compose.
+
+Production defaults:
+- Azure PostgreSQL Flexible Server with TLS enabled via `sslmode=require`
+- Azure Cache for Redis with TLS enabled on port `6380`
+- API uses MCP's internal Azure URL
+- MCP remains internal-only
 
 ## Dockerfiles
 
