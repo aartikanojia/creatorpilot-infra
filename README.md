@@ -75,6 +75,12 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/youtube/callback
 - `FIREBASE_CREDENTIALS` should point to the mounted API container path, defaulting to `/secrets/firebase.json`.
 - `APPLICATIONINSIGHTS_CONNECTION_STRING` can be set on both API and MCP to enable Azure Monitor Application Insights telemetry for requests, exceptions, and outbound dependencies.
 - In Azure Container Apps, mount the Firebase service account JSON into the API container as a secret volume or equivalent file mount.
+- Mount the Google Play service-account JSON into the API container and set `GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` to that mounted path.
+- Configure the Google Play RTDN Pub/Sub push endpoint as `POST https://<public-api-host>/api/v1/google-play/rtdn?token=<GOOGLE_PLAY_RTDN_TOKEN>`.
+- Set `GOOGLE_PLAY_RTDN_TOKEN` on the API Container App to a long random shared secret used only for the Pub/Sub push URL.
+- Set `INTERNAL_SERVICE_TOKEN` on both API and MCP so MCP can call protected internal API routes such as subscription alert delivery.
+- Set `API_INTERNAL_BASE_URL` on MCP so MCP can call the API's internal alert endpoint for subscription lifecycle emails.
+- Optional subscription alert email delivery uses the API SMTP env vars: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_SENDER_EMAIL`, `SMTP_RECIPIENT_EMAIL`, and optional `SMTP_USE_TLS`.
 - Restart or redeploy the API Container App after adding or rotating the Firebase credentials mount.
 - Azure PostgreSQL should use TLS with `sslmode=require`.
 - Azure Redis should use TLS with `REDIS_SSL=true` and port `6380`.
@@ -89,6 +95,10 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/youtube/callback
 5. Update MCP Azure env/secrets with the Azure PostgreSQL and Redis values.
 6. Update API `MCP_BASE_URL` to the internal Azure MCP URL.
 7. Mount the Firebase service account JSON into the API container and set `FIREBASE_CREDENTIALS=/secrets/firebase.json`.
-8. Set `APPLICATIONINSIGHTS_CONNECTION_STRING` on both API and MCP if you want Azure Monitor tracing and failure telemetry.
-9. Restart or redeploy the API Container App so the new Firebase mount and telemetry env vars are available at boot.
-10. Validate MCP health, DB connectivity, Redis connectivity, API-to-MCP calls, Application Insights telemetry, and the API notification test path.
+8. Mount the Google Play service-account JSON into the API container and set `GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` to that mount.
+9. Set `GOOGLE_PLAY_RTDN_TOKEN` on API and configure Pub/Sub push to `POST https://<public-api-host>/api/v1/google-play/rtdn?token=<GOOGLE_PLAY_RTDN_TOKEN>`.
+10. Set `INTERNAL_SERVICE_TOKEN` on both API and MCP to the same random value.
+11. Set `API_INTERNAL_BASE_URL=https://<public-api-host>` on MCP so RTDN-triggered lifecycle alerts can be sent through API.
+12. Set `APPLICATIONINSIGHTS_CONNECTION_STRING` on both API and MCP if you want Azure Monitor tracing and failure telemetry.
+13. Restart or redeploy the API and MCP Container Apps so the new Google Play, SMTP, internal-token, and telemetry env vars are available at boot.
+14. Validate MCP health, DB connectivity, Redis connectivity, API-to-MCP calls, Application Insights telemetry, the API notification test path, and the RTDN webhook path.
