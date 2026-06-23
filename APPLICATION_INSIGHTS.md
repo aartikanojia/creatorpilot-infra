@@ -1,6 +1,6 @@
 # Azure Monitor Application Insights
 
-YTCreator uses Azure Monitor Application Insights with the Azure Monitor OpenTelemetry distro for:
+CreatorPilot AI uses Azure Monitor Application Insights with the Azure Monitor OpenTelemetry distro for:
 
 - request latency and failures
 - unhandled exceptions

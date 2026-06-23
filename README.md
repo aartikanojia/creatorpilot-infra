@@ -21,13 +21,13 @@ This repo keeps local Docker Compose for development and Azure production wiring
 | creatorpilot-api    | 8000  | FastAPI backend for mobile app     |
 | creatorpilot-mcp    | 8001  | MCP server for YouTube analytics   |
 | postgres            | 5433  | PostgreSQL 15 database             |
-| redis               | 6379  | Redis 7 cache                      |
+| redis               | 6379  | Optional Redis cache for MCP short-term memory |
 
 For Azure production:
 - `creatorpilot-api` remains a public Azure Container App
 - `creatorpilot-mcp` remains an internal Azure Container App
 - PostgreSQL should be Azure Database for PostgreSQL Flexible Server
-- Redis should be Azure Cache for Redis
+- Redis is optional in closed testing; if enabled, use Azure Cache for Redis for MCP short-term cache/memory
 - Firebase credentials for push notifications should be mounted only into the API container as a secret-backed file
 
 ## Quick Start
@@ -69,7 +69,7 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/youtube/callback
 
 ## Azure Production Notes
 
-- MCP is the only runtime service in this architecture that should need direct PostgreSQL and Redis connectivity.
+- MCP is the only runtime service in this architecture that should need direct PostgreSQL connectivity. Redis connectivity is optional and only used for MCP short-term cache/memory.
 - API production config should point only to MCP's internal Azure URL unless API code later proves a DB dependency.
 - Google OAuth should redirect back to the public API callback route, not a frontend localhost callback.
 - `FIREBASE_CREDENTIALS` should point to the mounted API container path, defaulting to `/secrets/firebase.json`.
@@ -83,16 +83,16 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/youtube/callback
 - Optional subscription alert email delivery uses the API SMTP env vars: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_SENDER_EMAIL`, `SMTP_RECIPIENT_EMAIL`, and optional `SMTP_USE_TLS`.
 - Restart or redeploy the API Container App after adding or rotating the Firebase credentials mount.
 - Azure PostgreSQL should use TLS with `sslmode=require`.
-- Azure Redis should use TLS with `REDIS_SSL=true` and port `6380`.
+- If Azure Redis is enabled, use TLS with `REDIS_SSL=true` and port `6380`.
 - Do not expose MCP publicly.
 
 ## Minimal Cutover
 
-1. Create Azure Database for PostgreSQL Flexible Server and Azure Cache for Redis.
+1. Create Azure Database for PostgreSQL Flexible Server and, if desired, Azure Cache for Redis.
 2. Create the PostgreSQL database and application user.
 3. Restore existing PostgreSQL data if needed.
 4. Run MCP Alembic migrations against Azure PostgreSQL using `POSTGRES_URL`.
-5. Update MCP Azure env/secrets with the Azure PostgreSQL and Redis values.
+5. Update MCP Azure env/secrets with the Azure PostgreSQL values and optional Redis values.
 6. Update API `MCP_BASE_URL` to the internal Azure MCP URL.
 7. Mount the Firebase service account JSON into the API container and set `FIREBASE_CREDENTIALS=/secrets/firebase.json`.
 8. Mount the Google Play service-account JSON into the API container and set `GOOGLE_PLAY_SERVICE_ACCOUNT_FILE` to that mount.
@@ -101,4 +101,4 @@ GOOGLE_REDIRECT_URI=http://localhost:8000/auth/youtube/callback
 11. Set `API_INTERNAL_BASE_URL=https://<public-api-host>` on MCP so RTDN-triggered lifecycle alerts can be sent through API.
 12. Set `APPLICATIONINSIGHTS_CONNECTION_STRING` on both API and MCP if you want Azure Monitor tracing and failure telemetry.
 13. Restart or redeploy the API and MCP Container Apps so the new Google Play, SMTP, internal-token, and telemetry env vars are available at boot.
-14. Validate MCP health, DB connectivity, Redis connectivity, API-to-MCP calls, Application Insights telemetry, the API notification test path, and the RTDN webhook path.
+14. Validate MCP health, DB connectivity, optional Redis connectivity, API-to-MCP calls, Application Insights telemetry, the API notification test path, and the RTDN webhook path.

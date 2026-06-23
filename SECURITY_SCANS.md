@@ -1,6 +1,6 @@
 # Local Security Scans
 
-Minimal repeatable local security scan workflow for the YTCreator workspace.
+Minimal repeatable local security scan workflow for the CreatorPilot AI workspace.
 
 Run from:
 
